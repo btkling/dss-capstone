@@ -1,0 +1,122 @@
+---
+title: "getting-and-cleaning"
+author: "Ben Kling"
+date: "5/23/2022"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(tm)
+```
+
+In this doc, we'll load up some of the US files and start to examine them
+
+### Functions that need to be written
+
+1. Tokenization - given a file as input, return a tokenized version of the file
+
+2. Profanity Filtering - removing profanity and other words we do not want to 
+predict
+
+## Load the file
+```{r load}
+
+# read the data
+twitter_data <- read_lines("final/en_US/en_US.twitter.txt")
+blogs_data <- read_lines("final/en_US/en_US.blogs.txt")
+news_data <- read_lines("final/en_US/en_US.news.txt")
+
+# retrieve a 25% sample of the data
+set.seed(1066) # set the seed for reproducibility
+twitter_sample <- sample(twitter_data, 
+                         size = as.integer(length(twitter_data) * 0.25))
+blogs_sample <- sample(blogs_data,
+                       size = as.integer(length(blogs_data) * 0.25))
+news_sample <- sample(news_data,
+                      size = as.integer(length(news_data) * 0.25))
+
+
+# write the sample data back out
+write_lines(twitter_sample, "final/en_US/twittersample.txt")
+write_lines(blogs_sample, "final/en_US/blogsample.txt")
+write_lines(news_sample, "final/en_US/newssample.txt")
+```
+
+
+
+``` {r read the sample files}
+
+twitter_ptd <- PlainTextDocument(x = read_lines("final/en_US/twittersample.txt"))
+blogs_ptd <- PlainTextDocument(x = read_lines("final/en_US/blogsample.txt"))
+news_ptd <- PlainTextDocument(x = read_lines("final/en_US/newssample.txt"))
+
+twitter_cp <- Corpus(VectorSource(twitter_ptd)) 
+blogs_cp <- Corpus(VectorSource(blogs_ptd))
+news_cp <- Corpus(VectorSource(news_ptd))
+
+twitter_clean <- clean_me(twitter_cp)
+
+clean_me <- function(corp) {
+    corp %>%
+        tm_map(stripWhitespace) %>%
+        tm_map(content_transformer(tolower))
+}
+
+```
+
+
+```{r clean the sample files of garbage}
+
+
+
+```
+
+
+
+```{r for quiz}
+# The en_US.twitter.txt has  how many lines of text?
+length(twitter)
+
+# longest line
+max(nchar(twitter))
+max(nchar(blogs))
+max(nchar(news))
+
+# love /hate
+loves <- sum(grepl("love", twitter))
+hates <- sum(grepl("hate", twitter))
+loves / hates
+
+# biostats tweet
+twitter[grep("biostats", twitter)]
+
+# match count for string
+length(grep("A computer once beat me at chess, but it was no match for me at kickboxing",
+            twitter))
+
+
+
+```
+
+``` {r other eda}
+twitter[1:5]
+
+
+# sample the data
+
+
+
+make_tokens <- function (line) {
+    # how do you tokenize a line?
+    # identifying words
+    # identifying other tokens (punctuation, numbers, etc.)
+    # splitting a line against these tokens
+    
+}
+
+```
+
