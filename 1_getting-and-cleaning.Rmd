@@ -49,6 +49,7 @@ write_lines(news_sample, "final/en_US/newssample.txt")
 ```
 
 
+
 ```{r for quiz}
 # The en_US.twitter.txt has  how many lines of text?
 length(twitter_data)
@@ -71,8 +72,9 @@ length(grep("A computer once beat me at chess, but it was no match for me at kic
             twitter_data))
 ```
 
-```{r sample files in quanteda}
 
+
+```{r sample files in quanteda}
 # file path variables
 us_path <- "final/en_US/"
 twitter_file <- "twittersample.txt"
@@ -80,37 +82,64 @@ blog_file <- "blogsample.txt"
 news_file <- "newssample.txt"
 
 # read the text
-
 twitter_sample <- read_lines(paste0(us_path, twitter_file))
 blog_sample <- read_lines(paste0(us_path, blog_file))
 news_sample <- read_lines(paste0(us_path, news_file))
 
+
+# make a data frame of all of these different texts
+df <- data.table("source" = "twitter",
+                 "text" = twitter_sample)
+df <- bind_rows(df, data.table("source" = "blog",
+                               "text" = blog_sample))
+df <- bind_rows(df, data.table("source" = "news",
+                               "text" = news_sample))
+
+# summarize data
+df %>%
+    group_by(source) %>%
+    summarize(entries = n())
+
+# if you need to set options
 opt <- quanteda_options()
 
+
+
 # create corpora
-twitter_cp <- corpus(twitter_sample)
-blog_cp <- corpus(blog_sample)
-news_cp <- corpus(news_sample)
+cp <- corpus(df, text_field = "text")
 
 
-twitter_dtm <- dfm(twitter_cp, 
-                   remove = stopwords("en"),
-                   remove_punct = T)
-twitter_tokens <- tokens(twitter_cp,
-                         remove_punct = T,
-                         remove_symbols = T,
-                         remove_numbers = T,
-                         remove_url = T,
-                         verbose = T)
-twitter_tokens <- tokens_select(twitter_tokens,
-                                pattern = stopwords("en"),
-                                selection = "remove")
+# create tokens
+tk <- tokens(cp,
+             remove_punct = T,
+             remove_symbols = T,
+             remove_numbers = T,
+             remove_url = T,
+             verbose = T)
 
-twitter_ngrams <- tokens_ngrams(twitter_tokens, n=2:3)
-twitter_dfm <- dfm(twitter_tokens)
+
+
+# remove stopwords
+# twitter_tokens <- tokens_select(twitter_tokens,
+#                                 pattern = stopwords("en"),
+#                                 selection = "remove")
+
+
+
+# ngrams
+ngrm <- tokens_ngrams(tk, n=2:3)
+
+
+
+# document term matrix
+twitter_dfm <- dfm(twitter_tokens, tolower=T)
 head(twitter_ngrams[[1]],20)
 
+
+
+# EDA
 textplot_wordcloud(twitter_dfm, max_words=50)
-textstat_collocations(twitter_tokens)
+k <- kwic(tk, "are", window = 5)
+head(k, 10)
 
 ```
