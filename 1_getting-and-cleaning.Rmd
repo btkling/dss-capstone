@@ -11,6 +11,10 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(tm)
+library(quanteda)
+library(quanteda.textplots)
+library(quanteda.textstats)
+library(readtext)
 ```
 
 In this doc, we'll load up some of the US files and start to examine them
@@ -18,11 +22,10 @@ In this doc, we'll load up some of the US files and start to examine them
 ### Functions that need to be written
 
 1. Tokenization - given a file as input, return a tokenized version of the file
-
 2. Profanity Filtering - removing profanity and other words we do not want to 
 predict
 
-## Load the file
+## Load the full file, produce sample files
 ```{r load}
 
 # read the data
@@ -47,76 +50,68 @@ write_lines(news_sample, "final/en_US/newssample.txt")
 ```
 
 
-
-``` {r read the sample files}
-
-twitter_ptd <- PlainTextDocument(x = read_lines("final/en_US/twittersample.txt"))
-blogs_ptd <- PlainTextDocument(x = read_lines("final/en_US/blogsample.txt"))
-news_ptd <- PlainTextDocument(x = read_lines("final/en_US/newssample.txt"))
-
-twitter_cp <- Corpus(VectorSource(twitter_ptd)) 
-blogs_cp <- Corpus(VectorSource(blogs_ptd))
-news_cp <- Corpus(VectorSource(news_ptd))
-
-twitter_clean <- clean_me(twitter_cp)
-
-clean_me <- function(corp) {
-    corp %>%
-        tm_map(stripWhitespace) %>%
-        tm_map(content_transformer(tolower))
-}
-
-```
-
-
-```{r clean the sample files of garbage}
-
-
-
-```
-
-
-
 ```{r for quiz}
 # The en_US.twitter.txt has  how many lines of text?
-length(twitter)
+length(twitter_data)
 
 # longest line
-max(nchar(twitter))
-max(nchar(blogs))
-max(nchar(news))
+max(nchar(twitter_data))
+max(nchar(blogs_data))
+max(nchar(news_data))
 
 # love /hate
-loves <- sum(grepl("love", twitter))
-hates <- sum(grepl("hate", twitter))
+loves <- sum(grepl("love", twitter_data))
+hates <- sum(grepl("hate", twitter_data))
 loves / hates
 
 # biostats tweet
-twitter[grep("biostats", twitter)]
+twitter_data[grep("biostats", twitter_data)]
 
 # match count for string
 length(grep("A computer once beat me at chess, but it was no match for me at kickboxing",
-            twitter))
-
-
-
+            twitter_data))
 ```
 
-``` {r other eda}
-twitter[1:5]
+```{r sample files in quanteda}
+
+# file path variables
+us_path <- "final/en_US/"
+twitter_file <- "twittersample.txt"
+blog_file <- "blogsample.txt"
+news_file <- "newssample.txt"
+
+# read the text
+
+twitter_sample <- read_lines(paste0(us_path, twitter_file))
+blog_sample <- read_lines(paste0(us_path, blog_file))
+news_sample <- read_lines(paste0(us_path, news_file))
+
+opt <- quanteda_options()
+
+# create corpora
+twitter_cp <- corpus(twitter_sample)
+blog_cp <- corpus(blog_sample)
+news_cp <- corpus(news_sample)
 
 
-# sample the data
+twitter_dtm <- dfm(twitter_cp, 
+                   remove = stopwords("en"),
+                   remove_punct = T)
+twitter_tokens <- tokens(twitter_cp,
+                         remove_punct = T,
+                         remove_symbols = T,
+                         remove_numbers = T,
+                         remove_url = T,
+                         verbose = T)
+twitter_tokens <- tokens_select(twitter_tokens,
+                                pattern = stopwords("en"),
+                                selection = "remove")
 
+twitter_ngrams <- tokens_ngrams(twitter_tokens, n=2:3)
+twitter_dfm <- dfm(twitter_tokens)
+head(twitter_ngrams[[1]],20)
 
-
-make_tokens <- function (line) {
-    # how do you tokenize a line?
-    # identifying words
-    # identifying other tokens (punctuation, numbers, etc.)
-    # splitting a line against these tokens
-    
-}
+textplot_wordcloud(twitter_dfm, max_words=50)
+textstat_collocations(twitter_tokens)
 
 ```
-
