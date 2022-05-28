@@ -168,11 +168,14 @@ nostop_tokens <- tokens_select(tk,
 
 # ngrams
 ngrm <- tokens_ngrams(nostop_tokens, n=2)
+trgm <- tokens_ngrams(nostop_tokens, n=3)
 head(ngrm[[1]],20)
 
 # document feature matrix
 dm_full <- dfm(tk, tolower=T)
 dm_nostop <- dfm(nostop_tokens, tolower = T)
+dm_bigrm <- dfm(ngrm, tolower = T)
+dm_trigrm <- dfm(trgm, tolower = T)
 
 #grouped document feature matrix
 dmg <- dfm_group(docmatrix, groups = source)
@@ -188,19 +191,33 @@ textplot_keyness(tstat_key)
 
 # plot the 15 most commonly occurring words
 dm_nostop %>% 
-    textstat_frequency(n = 15, 
-                       group = source) %>%
+    textstat_frequency(n = 15) %>%
     head()
 
 
 dm_nostop %>% 
   textstat_frequency(n = 15) %>% 
   ggplot(aes(x = reorder(feature, frequency), y = frequency)) +
-  geom_point() +
+  geom_bar(stat='identity') +
   coord_flip() +
   labs(x = NULL, y = "Frequency") +
   theme_minimal()
 
+dm_bigrm %>%
+    textstat_frequency(n = 15) %>%
+    ggplot(aes(x = reorder(feature, frequency), y = frequency)) + 
+    geom_bar(stat='identity') + 
+    coord_flip() + 
+    labs(x= NULL, y = 'Frequency', title = "2-Gram Frequency") + 
+    theme_minimal()
+
+dm_trigrm %>% 
+    textstat_frequency(n = 15) %>%
+    ggplot(aes(x = reorder(feature, frequency), y = frequency)) + 
+    geom_bar(stat='identity') + 
+    coord_flip() + 
+    labs(x= NULL, y = 'Frequency', title = "3-Gram Frequency") + 
+    theme_minimal()
 
 # keyword in context
 k <- kwic(tk, "are", window = 5)
