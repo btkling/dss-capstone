@@ -82,6 +82,7 @@ length(grep("A computer once beat me at chess, but it was no match for me at kic
 ```
 
 
+
 ```{r quanteda options}
 
 # if you need to set options
@@ -128,6 +129,8 @@ tk <- tokens(cp,
 
 ```
 
+
+
 ```{r token modification}
 
 # replace all numbers with a placeholder
@@ -152,6 +155,9 @@ df %>%
 
 ```
 
+
+
+```{r analysis and visualizations}
 # remove stopwords
 nostop_tokens <- tokens_select(tk,
                                 pattern = stopwords("en"),
