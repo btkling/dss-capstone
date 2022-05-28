@@ -134,11 +134,12 @@ tk <- tokens(cp,
 ```{r token modification}
 
 # replace all numbers with a placeholder
-tk_comp <- tk %>%
+tk_clean <- tk %>%
     tokens_replace(pattern = "\\d+",
                    valuetype = "regex",
                    replacement = "**NUMBER**")
 
+# check one entry of tokens
 tk_comp[[1]]
 ```
 
@@ -147,6 +148,8 @@ tk_comp[[1]]
 ```{r quick qa checks}
 
 # summarize data
+
+# Number of entries
 df %>%
     group_by(source) %>%
     summarize(entries = n())
@@ -164,11 +167,11 @@ nostop_tokens <- tokens_select(tk,
                                 selection = "remove")
 
 # ngrams
-ngrm <- tokens_ngrams(tk, n=2)
+ngrm <- tokens_ngrams(nostop_tokens, n=2)
 head(ngrm[[1]],20)
 
-# document term matrix
-docmatrix <- dfm(tk, tolower=T)
+# document feature matrix
+dm_full <- dfm(tk, tolower=T)
 dm_nostop <- dfm(nostop_tokens, tolower = T)
 
 #grouped document feature matrix
@@ -182,6 +185,22 @@ tstat_key <- textstat_keyness(dmg_nostop,
 # visualizations
 textplot_wordcloud(dmg_nostop, max_words=50, comparison = T)
 textplot_keyness(tstat_key)
+
+# plot the 15 most commonly occurring words
+dm_nostop %>% 
+    textstat_frequency(n = 15, 
+                       group = source) %>%
+    head()
+
+
+dm_nostop %>% 
+  textstat_frequency(n = 15) %>% 
+  ggplot(aes(x = reorder(feature, frequency), y = frequency)) +
+  geom_point() +
+  coord_flip() +
+  labs(x = NULL, y = "Frequency") +
+  theme_minimal()
+
 
 # keyword in context
 k <- kwic(tk, "are", window = 5)
