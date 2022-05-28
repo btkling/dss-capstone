@@ -26,6 +26,15 @@ predict
 
 ## Load the full file, produce sample files
 ```{r load}
+# if the files do not exist, download them
+if(! file.exists("Coursera-Swiftkey.zip")) {
+    download.file("https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip", 
+                  destfile="Coursera-Swiftkey.zip")
+}
+
+if(! file.exists("final/en_US/en_US.twitter.txt")) { 
+    unzip("Coursera-Swiftkey.zip")
+}
 
 # read the data
 twitter_data <- read_lines("final/en_US/en_US.twitter.txt")
@@ -88,11 +97,11 @@ news_sample <- read_lines(paste0(us_path, news_file))
 
 
 # make a data frame of all of these different texts
-df <- data.table("source" = "twitter",
+df <- tibble("source" = "twitter",
                  "text" = twitter_sample)
-df <- bind_rows(df, data.table("source" = "blog",
+df <- bind_rows(df, tibble("source" = "blog",
                                "text" = blog_sample))
-df <- bind_rows(df, data.table("source" = "news",
+df <- bind_rows(df, tibble("source" = "news",
                                "text" = news_sample))
 
 # summarize data
@@ -120,25 +129,38 @@ tk <- tokens(cp,
 
 
 # remove stopwords
-# twitter_tokens <- tokens_select(twitter_tokens,
-#                                 pattern = stopwords("en"),
-#                                 selection = "remove")
+nostop_tokens <- tokens_select(tk,
+                                pattern = stopwords("en"),
+                                selection = "remove")
 
 
 
 # ngrams
 ngrm <- tokens_ngrams(tk, n=2:3)
-
+head(ngrm[[1]],20)
 
 
 # document term matrix
-twitter_dfm <- dfm(twitter_tokens, tolower=T)
-head(twitter_ngrams[[1]],20)
+docmatrix <- dfm(tk, tolower=T)
+dm_nostop <- dfm(nostop_tokens, tolower = T)
+
+#grouped document feature matrix
+dmg <- dfm_group(docmatrix, groups = source)
+dmg_nostop <- dfm_group(dm_nostop, groups = source)
 
 
 
-# EDA
-textplot_wordcloud(twitter_dfm, max_words=50)
+#keyness object
+tstat_key <- textstat_keyness(dmg_nostop, 
+                              target = dmg_nostop$source == 'twitter')
+
+
+
+# visualizations
+textplot_wordcloud(dmg_nostop, max_words=50, comparison = T)
+textplot_keyness(tstat_key)
+
+# keyword in context
 k <- kwic(tk, "are", window = 5)
 head(k, 10)
 
