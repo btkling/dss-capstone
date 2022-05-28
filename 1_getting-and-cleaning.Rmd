@@ -82,6 +82,15 @@ length(grep("A computer once beat me at chess, but it was no match for me at kic
 ```
 
 
+```{r quanteda options}
+
+# if you need to set options
+opt <- quanteda_options()
+
+
+```
+
+
 
 ```{r sample files in quanteda}
 # file path variables
@@ -104,15 +113,6 @@ df <- bind_rows(df, tibble("source" = "blog",
 df <- bind_rows(df, tibble("source" = "news",
                                "text" = news_sample))
 
-# summarize data
-df %>%
-    group_by(source) %>%
-    summarize(entries = n())
-
-# if you need to set options
-opt <- quanteda_options()
-
-
 
 # create corpora
 cp <- corpus(df, text_field = "text")
@@ -122,21 +122,45 @@ cp <- corpus(df, text_field = "text")
 tk <- tokens(cp,
              remove_punct = T,
              remove_symbols = T,
-             remove_numbers = T,
+             remove_numbers = F,
              remove_url = T,
              verbose = T)
 
+```
 
+```{r token modification}
+
+# replace all numbers with a placeholder
+tk_comp <- tk %>%
+    tokens_replace(pattern = "\\d+",
+                   valuetype = "regex",
+                   replacement = "**NUMBER**")
+
+tk_comp[[1]]
+```
+
+
+
+```{r quick qa checks}
+
+# summarize data
+df %>%
+    group_by(source) %>%
+    summarize(entries = n())
+
+
+
+```
 
 # remove stopwords
 nostop_tokens <- tokens_select(tk,
                                 pattern = stopwords("en"),
                                 selection = "remove")
 
-
+tokens_
 
 # ngrams
-ngrm <- tokens_ngrams(tk, n=2:3)
+ngrm <- tokens_ngrams(tk, n=2)
 head(ngrm[[1]],20)
 
 
