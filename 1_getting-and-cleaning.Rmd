@@ -43,12 +43,13 @@ news_data <- read_lines("final/en_US/en_US.news.txt")
 
 # retrieve a 25% sample of the data
 set.seed(1066) # set the seed for reproducibility
+sample_size <- 0.05
 twitter_sample <- sample(twitter_data, 
-                         size = as.integer(length(twitter_data) * 0.25))
+                         size = as.integer(length(twitter_data) * sample_size))
 blogs_sample <- sample(blogs_data,
-                       size = as.integer(length(blogs_data) * 0.25))
+                       size = as.integer(length(blogs_data) * sample_size))
 news_sample <- sample(news_data,
-                      size = as.integer(length(news_data) * 0.25))
+                      size = as.integer(length(news_data) * sample_size))
 
 
 # write the sample data back out
