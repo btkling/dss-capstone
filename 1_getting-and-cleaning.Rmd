@@ -140,6 +140,8 @@ tk_clean <- tk %>%
                    valuetype = "regex",
                    replacement = "**NUMBER**")
 
+# strip out repeated phrases
+
 # check one entry of tokens
 tk_comp[[1]]
 ```
@@ -222,6 +224,14 @@ dm_trigrm %>%
 
 # keyword in context
 k <- kwic(tk, "are", window = 5)
+k <- kwic(trgm, "amp_amp_amp", window = 3)
 head(k, 10)
+
+# vested interests repeat over and over again
+cp[[121996]]
+
+# amp repeats over and over again
+cp[[121972]]
+tk[[121972]]
 
 ```
