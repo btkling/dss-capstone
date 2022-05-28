@@ -163,12 +163,9 @@ nostop_tokens <- tokens_select(tk,
                                 pattern = stopwords("en"),
                                 selection = "remove")
 
-tokens_
-
 # ngrams
 ngrm <- tokens_ngrams(tk, n=2)
 head(ngrm[[1]],20)
-
 
 # document term matrix
 docmatrix <- dfm(tk, tolower=T)
@@ -178,13 +175,9 @@ dm_nostop <- dfm(nostop_tokens, tolower = T)
 dmg <- dfm_group(docmatrix, groups = source)
 dmg_nostop <- dfm_group(dm_nostop, groups = source)
 
-
-
 #keyness object
 tstat_key <- textstat_keyness(dmg_nostop, 
                               target = dmg_nostop$source == 'twitter')
-
-
 
 # visualizations
 textplot_wordcloud(dmg_nostop, max_words=50, comparison = T)
