@@ -63,6 +63,8 @@ write_lines(news_sample, "final/en_US/newssample.txt")
 ```{r for quiz}
 # The en_US.twitter.txt has  how many lines of text?
 length(twitter_data)
+length(blogs_data)
+length(news_data)
 
 # longest line
 max(nchar(twitter_data))
@@ -94,7 +96,7 @@ opt <- quanteda_options()
 
 
 
-```{r sample files in quanteda}
+```{r load sample files}
 # file path variables
 us_path <- "final/en_US/"
 twitter_file <- "twittersample.txt"
@@ -189,8 +191,29 @@ tstat_key <- textstat_keyness(dmg_nostop,
                               target = dmg_nostop$source == 'twitter')
 
 # visualizations
-textplot_wordcloud(dmg_nostop, max_words=50, comparison = T)
+textplot_wordcloud(dm_full, max_words=100)
+textplot_wordcloud(dmg_nostop, max_words=100)
+textplot_wordcloud(dmg_nostop, max_words=100, comparison = T)
 textplot_keyness(tstat_key)
+
+
+# histogram of word frequency
+dm_full %>%
+    textstat_frequency(n = 500) %>%
+    ggplot(mapping = aes(frequency)) + 
+    geom_histogram(bins = 25) + 
+    labs(title="Histogram of Word Frequency",
+         x = "Word Frequency",
+         y = "Number of Words")
+
+
+dm_nostop %>%
+    textstat_frequency(n = 500) %>%
+    ggplot(mapping = aes(frequency)) + 
+    geom_histogram(bins = 25) + 
+    labs(title="Histogram of Word Frequency - with Stopwords removed",
+         x = "Word Frequency",
+         y = "Number of Words")
 
 # plot the 15 most commonly occurring words
 dm_nostop %>% 
@@ -235,3 +258,13 @@ cp[[121972]]
 tk[[121972]]
 
 ```
+
+some possible methods to cover additional words or reduce the size of the 
+corpora:
+
+1. Dictionaries - dictionaries can map multiple words into groups, either 
+based on geographic location, sentiment, or other like characteristics. These
+dictionaries can also relate other words that may not show up in the corpora
+to those that do, or those that do more frequently
+
+2. 
