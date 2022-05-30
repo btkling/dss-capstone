@@ -32,6 +32,7 @@ if(! file.exists("Coursera-Swiftkey.zip")) {
                   destfile="Coursera-Swiftkey.zip")
 }
 
+# if the unzipped files do not exist, unzip them
 if(! file.exists("final/en_US/en_US.twitter.txt")) { 
     unzip("Coursera-Swiftkey.zip")
 }

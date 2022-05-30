@@ -1,0 +1,86 @@
+---
+title: "Milestone Report"
+author: "Ben Kling"
+date: "5/30/2022"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(quanteda)
+library(quanteda.textplots)
+library(quanteda.textstats)
+library(readtext)
+library(gt)
+```
+
+# Milestone Report - Text Prediction
+
+In this report, I will outline major features of three different input files, 
+twitter posts, blog posts, and news articles and then provide next steps for
+this project, that include creating the predictive model as well as packaging
+the model into a Shiny App.
+
+## Data Load and basic features
+```{r load full files, warning=FALSE, cache=TRUE}
+# if the files do not exist, download them
+if(! file.exists("Coursera-Swiftkey.zip")) {
+    download.file("https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip", 
+                  destfile="Coursera-Swiftkey.zip")
+}
+
+# if the unzipped files do not exist, unzip them
+if(! file.exists("final/en_US/en_US.twitter.txt")) { 
+    unzip("Coursera-Swiftkey.zip")
+}
+
+# read the data
+twitter_data <- read_lines("final/en_US/en_US.twitter.txt")
+blogs_data <- read_lines("final/en_US/en_US.blogs.txt")
+news_data <- read_lines("final/en_US/en_US.news.txt")
+
+```
+
+
+
+The data are very large, totalling **`r 267.8 + 269.8 + 334.5 `** MiB and
+**`r length(twitter_data) + length(blogs_data) + length(news_data)`** records of
+data. In order to perform any intensive calculations against this data we will
+need to sample the data. At this point it feels sufficient to simply retrieve a
+5% sample of the data, though this may be changed in the model creation process
+if we are unable to produce an accurate prediction.
+
+Before sampling, let's look at a few summary statistics to better understand
+each of these data sets:
+```{r full file summary stats}
+
+summary_stats <- tibble(source = "twitter",
+                        records = length(twitter_data),
+                        size_mib = object.size(twitter_data) / 1000.0 / 1000.0,
+                        min_length = min(nchar(twitter_data)),
+                        max_length = max(nchar(twitter_data)),
+                        mean_length = mean(nchar(twitter_data))) %>%
+    bind_rows(tibble(source = "blogs",
+                        records = length(blogs_data),
+                        size_mib = object.size(blogs_data) / 1000.0 / 1000.0,
+                        min_length = min(nchar(blogs_data)),
+                        max_length = max(nchar(blogs_data)),
+                        mean_length = mean(nchar(blogs_data)))) %>%
+    bind_rows(tibble(source = "news",
+                        records = length(news_data),
+                        size_mib = object.size(news_data) / 1000.0 / 1000.0,
+                        min_length = min(nchar(news_data)),
+                        max_length = max(nchar(news_data)),
+                        mean_length = mean(nchar(news_data))))
+
+gt(summary_stats) %>%
+    tab_header(
+        title = "Summary Statistics",
+        subtitle = md("*(length presented as number of characters)*")
+    )
+
+```
+
