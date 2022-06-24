@@ -84,3 +84,74 @@ gt(summary_stats) %>%
 
 ```
 
+From this we can see that:
+
+- As expected, twitter records ("tweets") have a maximium of 140 total characters
+per entry, and average 69 characters per tweet
+
+- the majority of our records sample comes from twitter, and despite being 
+shorter in average length, contributes more overall data to the body of text
+that we are looking at. 
+
+- Blogs and news articles are both more similar to each other, containing an 
+average of 200-230 characters per entry, but ranging to over 40k characters
+for the longest blog post.
+
+
+Next, we will begin to analyze the actual words contained in the report. For all 
+of our exploratory work, we'll be using the 5% sample of the data to ensure 
+processing efficiency.
+
+```{r sample files}
+# retrieve a 5% sample of the data
+set.seed(1066) # set the seed for reproducibility
+sample_size <- 0.05
+twitter_sample <- sample(twitter_data, 
+                         size = as.integer(length(twitter_data) * sample_size))
+blogs_sample <- sample(blogs_data,
+                       size = as.integer(length(blogs_data) * sample_size))
+news_sample <- sample(news_data,
+                      size = as.integer(length(news_data) * sample_size))
+
+
+# write the sample data back out
+write_lines(twitter_sample, "final/en_US/twittersample.txt")
+write_lines(blogs_sample, "final/en_US/blogsample.txt")
+write_lines(news_sample, "final/en_US/newssample.txt")
+```
+
+```{r load the sampled files}
+# file path variables
+us_path <- "final/en_US/"
+twitter_file <- "twittersample.txt"
+blog_file <- "blogsample.txt"
+news_file <- "newssample.txt"
+
+# read the text
+twitter_sample <- read_lines(paste0(us_path, twitter_file))
+blog_sample <- read_lines(paste0(us_path, blog_file))
+news_sample <- read_lines(paste0(us_path, news_file))
+
+
+# make a data frame of all of these different texts
+df <- tibble("source" = "twitter",
+                 "text" = twitter_sample)
+df <- bind_rows(df, tibble("source" = "blog",
+                               "text" = blog_sample))
+df <- bind_rows(df, tibble("source" = "news",
+                               "text" = news_sample))
+
+
+# create corpora
+cp <- corpus(df, text_field = "text")
+
+
+# create tokens
+tk <- tokens(cp,
+             remove_punct = T,
+             remove_symbols = T,
+             remove_numbers = F,
+             remove_url = T,
+             verbose = T)
+
+```
